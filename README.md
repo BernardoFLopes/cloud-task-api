@@ -3,7 +3,7 @@
 Aplicação Flask/SQLite com esteira de **CI/CD no GitHub Actions, Docker, GHCR e AWS EC2**.
 
 ## Integrantes
-- **Bernardo** — Configuração do GitHub/Actions, desenvolvimento dos endpoints (`DELETE` e filtro) e deploy na EC2.
+- **Bernardo Ferreira Lopes (RA: 22309764)** — Configuração do GitHub/Actions, desenvolvimento dos endpoints (`DELETE` e filtro) e deploy na EC2.
 
 ## Arquitetura
 `Branch/PR -> CI (pytest + Docker build) -> merge main -> CI (publicação GHCR por SHA) -> CD (SSH EC2 + docker pull/run) -> /health`
