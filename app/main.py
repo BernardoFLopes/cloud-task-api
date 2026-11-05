@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sqlite3
 from pathlib import Path
 from flask import Flask, jsonify, request
@@ -38,8 +38,15 @@ def create_app(test_config=None):
 
     @app.get("/tasks")
     def list_tasks():
+        done_param = request.args.get("done")
         with connect() as db:
-            items = db.execute("SELECT id, title, done FROM tasks ORDER BY id").fetchall()
+            if done_param is not None:
+                if done_param.lower() not in ("true", "false", "1", "0"):
+                    return jsonify(error="parametro done invalido"), 400
+                done_val = 1 if done_param.lower() in ("true", "1") else 0
+                items = db.execute("SELECT id, title, done FROM tasks WHERE done=? ORDER BY id", (done_val,)).fetchall()
+            else:
+                items = db.execute("SELECT id, title, done FROM tasks ORDER BY id").fetchall()
         return jsonify([dict(id=r["id"], title=r["title"], done=bool(r["done"])) for r in items])
 
     @app.post("/tasks")
@@ -67,6 +74,15 @@ def create_app(test_config=None):
         if not cursor.rowcount:
             return jsonify(error="tarefa nao encontrada"), 404
         return jsonify(id=task_id, done=data["done"]), 200
+
+    @app.delete("/tasks/<int:task_id>")
+    def delete_task(task_id):
+        with connect() as db:
+            cursor = db.execute("DELETE FROM tasks WHERE id=?", (task_id,))
+            db.commit()
+        if not cursor.rowcount:
+            return jsonify(error="tarefa nao encontrada"), 404
+        return "", 204
 
     return app
 
