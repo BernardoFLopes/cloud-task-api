@@ -1,4 +1,4 @@
-import pytest
+﻿import pytest
 from app.main import create_app
 
 
@@ -37,3 +37,30 @@ def test_mark_done(client):
 
 def test_not_found(client):
     assert client.patch("/tasks/999", json={"done": True}).status_code == 404
+
+
+def test_delete_task_success(client):
+    item = client.post("/tasks", json={"title": "Tarefa para excluir"}).json
+    result = client.delete(f'/tasks/{item["id"]}')
+    assert result.status_code == 204
+    assert client.get("/tasks").json == []
+
+
+def test_delete_task_not_found(client):
+    result = client.delete("/tasks/999")
+    assert result.status_code == 404
+
+
+def test_filter_tasks_by_done(client):
+    t1 = client.post("/tasks", json={"title": "Pendente"}).json
+    t2 = client.post("/tasks", json={"title": "Concluida"}).json
+    client.patch(f'/tasks/{t2["id"]}', json={"done": True})
+
+    done_tasks = client.get("/tasks?done=true").json
+    assert len(done_tasks) == 1
+    assert done_tasks[0]["id"] == t2["id"]
+
+    pending_tasks = client.get("/tasks?done=false").json
+    assert len(pending_tasks) == 1
+    assert pending_tasks[0]["id"] == t1["id"]
+
